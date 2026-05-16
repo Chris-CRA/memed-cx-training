@@ -325,14 +325,26 @@ async function saveResults() {
     respostas: respostasUsuario
   };
   console.log('Enviando resultado:', payload);
+
+  // Tentativa 1: fetch com no-cors (não lê resposta mas passa pelo CORS)
   try {
-    const response = await fetch(APPS_SCRIPT_URL, {
+    await fetch(APPS_SCRIPT_URL, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
       body:    JSON.stringify(payload)
     });
-    const result = await response.json();
-    console.log('Resposta Apps Script:', result);
+    console.log('Resultado enviado via no-cors');
+    return;
+  } catch (error) {
+    console.warn('no-cors falhou, tentando via GET:', error);
+  }
+
+  // Tentativa 2: fallback via GET com dados na URL (contorna CORS completamente)
+  try {
+    const params = encodeURIComponent(JSON.stringify(payload));
+    await fetch(APPS_SCRIPT_URL + '?save=' + params, { mode: 'no-cors' });
+    console.log('Resultado enviado via GET fallback');
   } catch (error) {
     console.error('Erro ao salvar ranking:', error);
   }
