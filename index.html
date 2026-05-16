@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Central de Integrações — Memed CX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+
+/* ===========================
+   ROOT / TOKENS
+=========================== */
+:root {
+  --bg:        #0b0820;
+  --bg2:       #0e0b1e;
+  --card:      #161026;
+  --card2:     #1a1436;
+  --border:    #2d2250;
+  --border2:   #3a2d6a;
+  --purple:    #8b5cf6;
+  --purple-l:  #b1b1ff;
+  --purple-d:  #6d28d9;
+  --glow:      rgba(139,92,246,.35);
+  --glow-s:    rgba(139,92,246,.15);
+  --text:      #ffffff;
+  --muted:     #cfcfcf;
+  --muted2:    #8b84a8;
+  --accent:    #a855f7;
+  --green:     #22c55e;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Outfit', sans-serif;
+}
+
+/* ===========================
+   RESET
+=========================== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* ===========================
+   GLOBAL BG LAYER
+=========================== */
+body::before {
+  content:'';
+  position: fixed; inset:0; z-index:-3;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 0%, #4c1d9540 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, #7c3aed30 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, #1e104030 0%, transparent 70%),
+    var(--bg);
+}
+
+/* Grid overlay */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:-2;
+  background-image:
+    linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ===========================
+   NOISE TEXTURE
+=========================== */
+.noise {
+  position:fixed; inset:0; z-index:-1;
+  pointer-events:none;
+  opacity:.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+/* ===========================
+   SCROLLBAR
+=========================== */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius:99px; }
+
+/* ===========================
+   NAV
+=========================== */
+nav {
+  position: fixed; top:0; left:0; right:0; z-index:100;
+  display: flex; align-items:center; justify-content:space-between;
+  padding: 18px min(1400px,92%) auto;
+  padding-left: calc((100% - min(1400px,92%))/2);
+  padding-right: calc((100% - min(1400px,92%))/2);
+  background: rgba(11,8,32,.75);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(139,92,246,.12);
+}
+
+.nav-logo {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--purple); }
+
+.nav-links {
+  display: flex; gap:32px; list-style:none;
+}
+.nav-links a {
+  color: var(--muted2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  background: linear-gradient(135deg, var(--purple), var(--purple-d));
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: .25s;
+  box-shadow: 0 4px 18px var(--glow);
+}
+.nav-cta:hover { transform:translateY(-2px); box-shadow: 0 8px 28px var(--glow); }
+
+/* ===========================
+   CONTAINER
+=========================== */
+.wrap {
+  width: min(1380px, 92%);
+  margin: auto;
+}
+
+/* ===========================
+   HERO
+=========================== */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 60px;
+  padding-top: 100px;
+  position: relative;
+}
+
+/* Floating particles */
+.particles {
+  position:absolute; inset:0; pointer-events:none; overflow:hidden;
+}
+.particle {
+  position:absolute;
+  width: 3px; height:3px;
+  background: var(--purple);
+  border-radius:50%;
+  animation: float-up linear infinite;
+  opacity:0;
+}
+@keyframes float-up {
+  0%   { transform:translateY(100vh) scale(0); opacity:0; }
+  10%  { opacity:.6; }
+  90%  { opacity:.3; }
+  100% { transform:translateY(-20vh) scale(1.5); opacity:0; }
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items:center; gap:10px;
+  background: rgba(139,92,246,.12);
+  border: 1px solid rgba(139,92,246,.3);
+  color: var(--purple-l);
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.hero-eyebrow::before {
+  content:'';
+  width:7px; height:7px;
+  background: var(--green);
+  border-radius:50%;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50% { opacity:.4; }
+}
+
+.hero h1 {
+  font-size: clamp(44px, 6vw, 80px);
+  font-weight: 900;
+  line-height: .95;
+  letter-spacing: -2px;
+  margin-bottom: 28px;
+}
+.hero h1 .accent { color: var(--purple); }
+.hero h1 .outline {
+  -webkit-text-stroke: 2px var(--purple);
+  color: transparent;
+}
+
+.hero-desc {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.75;
+  max-width: 520px;
+  margin-bottom: 40px;
+}
+
+.hero-badges {
+  display: flex; gap:12px; flex-wrap:wrap;
+  margin-bottom: 40px;
+}
+.badge-sm {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--muted2);
+  font-family: var(--mono);
+}
+
+.hero-actions {
+  display: flex; gap:16px; flex-wrap:wrap;
+}
+.btn-primary {
+  display: inline-flex; align-items:center; gap:10px;
+  background: linear-gradient(135deg, var(--purple), var(--purple-d));
+  color: white;
+  border:none;
+  padding: 18px 32px;
+  border-radius: 16px;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor:pointer;
+  transition:.3s;
+  box-shadow: 0 10px 30px var(--glow);
+  text-decoration: none;
+}
+.btn-primary:hover { transform:translateY(-3px); box-shadow: 0 16px 40px var(--glow); }
+
+.btn-ghost {
+  display: inline-flex; align-items:center; gap:10px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  padding: 18px 28px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: .2s;
+  text-decoration: none;
+}
+.btn-ghost:hover { border-color: var(--purple); color: var(--text); }
+
+/* Hero Visual Panel */
+.hero-visual {
+  position:relative;
+  height: 580px;
+}
+
+.hero-screen {
+  position: absolute;
+  inset:0;
+  background: linear-gradient(160deg, #171029, #0e0b1e);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  overflow: hidden;
+  padding: 28px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.hero-screen::before {
+  content:'';
+  position:absolute;
+  top:-80px; right:-80px;
+  width:300px; height:300px;
+  background: radial-gradient(circle, #8b5cf620, transparent 70%);
+  pointer-events:none;
+}
+
+/* Window controls */
+.window-bar {
+  display:flex; align-items:center; gap:8px;
+  margin-bottom: 20px;
+}
+.dot { width:11px; height:11px; border-radius:50%; }
+.dot-r { background:#ff5f57; }
+.dot-y { background:#febc2e; }
+.dot-g { background:#28c840; }
+.window-title {
+  margin-left:12px;
+  font-size: 12px;
+  color: var(--muted2);
+  font-family: var(--mono);
+}
+
+.terminal-lines {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.t-prompt { color: #50fa7b; }
+.t-cmd    { color: #f8f8f2; }
+.t-output { color: #8be9fd; }
+.t-error  { color: #ff5555; }
+.t-warn   { color: #ffb86c; }
+.t-info   { color: var(--purple-l); }
+.t-dim    { color: var(--muted2); }
+
+.cursor-blink {
+  display:inline-block;
+  width:8px; height:14px;
+  background: var(--purple-l);
+  animation: blink .8s step-end infinite;
+  vertical-align: middle;
+  margin-left:2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* Mini metric cards floating */
+.float-card {
+  position:absolute;
+  background: rgba(22,16,38,.92);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 16px 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  animation: float-gentle 6s ease-in-out infinite;
+}
+@keyframes float-gentle {
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-8px); }
+}
+.float-card.fc1 { top:-20px; right:-20px; animation-delay:-1s; }
+.float-card.fc2 { bottom:60px; right:-30px; animation-delay:-3s; }
+.float-card.fc3 { bottom:-10px; left:-10px; animation-delay:-5s; }
+
+.fc-label { font-size:11px; color:var(--muted2); font-family:var(--mono); margin-bottom:6px; }
+.fc-value { font-size:20px; font-weight:700; }
+.fc-green { color:var(--green); }
+.fc-yellow { color:var(--yellow); }
+.fc-purple { color:var(--purple-l); }
+
+/* Status row */
+.status-row {
+  display:flex; gap:10px; flex-wrap:wrap;
+  margin-top:20px;
+}
+.status-pill {
+  display:inline-flex; align-items:center; gap:6px;
+  background: rgba(139,92,246,.1);
+  border: 1px solid rgba(139,92,246,.25);
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size:12px;
+  color: var(--purple-l);
+  font-family: var(--mono);
+}
+.status-pill::before {
+  content:'';
+  width:5px; height:5px;
+  background: var(--purple);
+  border-radius:50%;
+  box-shadow:0 0 6px var(--purple);
+}
+
+/* HTTP chips */
+.http-grid {
+  display:flex; gap:8px; flex-wrap:wrap;
+  margin-top:16px;
+}
+.http-chip {
+  font-family: var(--mono);
+  font-size:11px;
+  padding:5px 10px;
+  border-radius:8px;
+  font-weight:700;
+}
+.h-get    { background:#166534; color:#4ade80; }
+.h-post   { background:#1e3a5f; color:#60a5fa; }
+.h-patch  { background:#44250a; color:#fb923c; }
+.h-err    { background:#7f1d1d; color:#fca5a5; }
+.h-401    { background:#451a03; color:#fcd34d; }
+
+/* ===========================
+   SECTION SHARED
+=========================== */
+section { padding: 120px 0; }
+
+.section-label {
+  display:inline-flex; align-items:center; gap:8px;
+  color: var(--purple-l);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  margin-bottom:18px;
+  font-family: var(--mono);
+}
+.section-label::before {
+  content:'//';
+  color: var(--purple);
+}
+
+.section-title {
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height:1.05;
+  margin-bottom:18px;
+}
+.section-title span { color: var(--purple); }
+
+.section-desc {
+  color: var(--muted);
+  font-size: 17px;
+  line-height:1.7;
+  max-width:600px;
+  margin-bottom:60px;
+}
+
+/* ===========================
+   STATS STRIP
+=========================== */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap:1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow:hidden;
+  margin-bottom:80px;
+}
+.stat-block {
+  background: var(--card);
+  padding: 32px 28px;
+  text-align:center;
+}
+.stat-block:hover { background: var(--card2); }
+.stat-num {
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--purple-l);
+  line-height:1;
+  margin-bottom:8px;
+}
+.stat-lbl { color:var(--muted2); font-size:14px; }
+
+/* ===========================
+   GAME SECTION
+=========================== */
+.game-section {
+  padding: 80px 0 120px;
+}
+
+.game-wrapper {
+  position:relative;
+}
+
+.game-outer {
+  position:relative;
+  border-radius: 32px;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--purple-d), var(--purple), #a855f7, var(--purple-d));
+  background-size: 300% 300%;
+  animation: gradient-shift 6s ease infinite;
+  box-shadow: 0 0 60px var(--glow), 0 30px 80px rgba(0,0,0,.5);
+}
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.game-inner {
+  background: var(--bg);
+  border-radius: 30px;
+  overflow: hidden;
+  position:relative;
+}
+
+/* Top chrome bar */
+.game-chrome {
+  background: rgba(22,16,38,.98);
+  border-bottom: 1px solid var(--border);
+  padding:14px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.game-chrome-dots { display:flex; gap:7px; }
+.game-chrome-title {
+  font-size:13px;
+  color: var(--muted2);
+  font-family: var(--mono);
+  display:flex; align-items:center; gap:10px;
+}
+.game-chrome-title::before {
+  content:'🔴';
+  font-size:11px;
+}
+.game-live {
+  display:flex; align-items:center; gap:6px;
+  font-size:12px;
+  color:var(--green);
+  font-family:var(--mono);
+}
+.game-live::before {
+  content:'';
+  width:6px; height:6px;
+  background:var(--green);
+  border-radius:50%;
+  animation:pulse 1.5s infinite;
+}
+
+.game-frame-container {
+  width:100%;
+  min-height: 900px;
+  position:relative;
+}
+
+/* ===== IFRAME ===== */
+/* ⬇️ INSIRA O IFRAME DO GAME AQUI ⬇️ */
+.game-frame-container iframe {
+  width:100%;
+  height:620px;
+  border:none;
+  display:block;
+  transition: height .4s ease;
+}
+/* ⬆️ FIM DA ÁREA DO IFRAME ⬆️ */
+
+/* Placeholder shown when no iframe src */
+.game-placeholder {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:500px;
+  gap:20px;
+  color:var(--muted2);
+  font-family:var(--mono);
+  font-size:14px;
+}
+.game-placeholder .big-icon { font-size:64px; }
+
+/* ===========================
+   RANKING
+=========================== */
+.ranking-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:24px;
+  margin-bottom:60px;
+}
+
+.rank-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  padding: 36px 28px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  transition:.3s;
+}
+.rank-card:hover {
+  border-color: var(--border2);
+  transform:translateY(-4px);
+  box-shadow: 0 20px 50px rgba(0,0,0,.4);
+}
+.rank-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background: radial-gradient(circle at 50% 0%, var(--glow-s), transparent 60%);
+}
+
+.rank-card.gold   { border-color:#f59e0b55; }
+.rank-card.silver { border-color:#94a3b855; }
+.rank-card.bronze { border-color:#b45309aa; }
+.rank-card.gold::before   { background: radial-gradient(circle at 50% 0%, rgba(245,158,11,.12), transparent 60%); }
+.rank-card.silver::before { background: radial-gradient(circle at 50% 0%, rgba(148,163,184,.1), transparent 60%); }
+.rank-card.bronze::before { background: radial-gradient(circle at 50% 0%, rgba(180,83,9,.1), transparent 60%); }
+
+.rank-medal { font-size:48px; margin-bottom:16px; }
+.rank-pos {
+  font-size:13px;
+  font-family:var(--mono);
+  color:var(--muted2);
+  margin-bottom:10px;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.rank-name { font-size:22px; font-weight:700; margin-bottom:8px; }
+.rank-score {
+  font-size:40px;
+  font-weight:800;
+  color: var(--purple-l);
+  margin-bottom:4px;
+}
+.rank-acertos { font-size:13px; color:var(--muted2); font-family:var(--mono); }
+
+.rank-table {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow:hidden;
+}
+.rank-table-row {
+  display:grid;
+  grid-template-columns: 60px 1fr auto auto;
+  align-items:center;
+  padding:18px 28px;
+  border-bottom: 1px solid var(--border);
+  transition:.2s;
+}
+.rank-table-row:last-child { border-bottom:none; }
+.rank-table-row:hover { background:var(--card2); }
+.rank-table-row.header { color:var(--muted2); font-size:12px; font-family:var(--mono); letter-spacing:.5px; }
+.rn { font-weight:700; color:var(--purple-l); font-size:18px; }
+.rname { font-weight:600; }
+.rscore { font-weight:700; color:var(--text); }
+.rlevel {
+  font-size:12px;
+  background: rgba(139,92,246,.15);
+  border:1px solid rgba(139,92,246,.3);
+  color:var(--purple-l);
+  padding:4px 12px;
+  border-radius:99px;
+  font-family:var(--mono);
+}
+
+/* ===========================
+   ABOUT / MODULES
+=========================== */
+.modules-grid {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:20px;
+}
+
+.module-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px 28px;
+  position:relative;
+  overflow:hidden;
+  transition:.3s;
+}
+.module-card:hover {
+  border-color:var(--border2);
+  box-shadow:0 16px 40px rgba(0,0,0,.3);
+  transform:translateY(-2px);
+}
+.module-card::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:3px;
+  background: linear-gradient(90deg, var(--purple-d), var(--purple));
+  opacity:0;
+  transition:.3s;
+}
+.module-card:hover::after { opacity:1; }
+
+.module-icon {
+  width:52px; height:52px;
+  background: rgba(139,92,246,.12);
+  border: 1px solid rgba(139,92,246,.25);
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+  margin-bottom:20px;
+}
+.module-title {
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.module-desc {
+  color:var(--muted2);
+  font-size:14px;
+  line-height:1.7;
+  margin-bottom:18px;
+}
+.module-tags {
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+.module-tag {
+  font-size:11px;
+  background:rgba(139,92,246,.1);
+  border:1px solid rgba(139,92,246,.2);
+  color:var(--purple-l);
+  padding:4px 10px;
+  border-radius:6px;
+  font-family:var(--mono);
+}
+
+/* CTA BANNER */
+.cta-banner {
+  background: linear-gradient(135deg, #1a0d3d, #2a1060);
+  border: 1px solid rgba(139,92,246,.35);
+  border-radius:32px;
+  padding:60px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  margin-top:80px;
+}
+.cta-banner::before {
+  content:'';
+  position:absolute;
+  top:-100px; left:50%;
+  transform:translateX(-50%);
+  width:500px; height:300px;
+  background:radial-gradient(ellipse, rgba(139,92,246,.25), transparent 70%);
+  pointer-events:none;
+}
+.cta-banner h2 { font-size:42px; font-weight:800; letter-spacing:-1px; margin-bottom:16px; }
+.cta-banner p  { color:var(--muted); font-size:18px; margin-bottom:36px; }
+
+/* ===========================
+   FOOTER
+=========================== */
+footer {
+  border-top: 1px solid var(--border);
+  padding:60px 0 40px;
+}
+
+.footer-grid {
+  display:grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap:48px;
+  margin-bottom:56px;
+}
+
+.footer-brand .logo-f {
+  font-size:26px; font-weight:800; margin-bottom:16px;
+}
+.footer-brand .logo-f span { color:var(--purple); }
+.footer-brand p {
+  color:var(--muted2); font-size:14px; line-height:1.7; max-width:280px;
+}
+
+.footer-col h4 {
+  font-size:14px; font-weight:700;
+  color:var(--muted2);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:20px;
+}
+.footer-col ul { list-style:none; display:flex; flex-direction:column; gap:12px; }
+.footer-col a {
+  color:var(--muted2);
+  text-decoration:none;
+  font-size:14px;
+  transition:.2s;
+}
+.footer-col a:hover { color:var(--text); }
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top:28px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-copy { color:var(--muted2); font-size:13px; }
+.footer-status {
+  display:flex; align-items:center; gap:8px;
+  font-size:12px; color:var(--green); font-family:var(--mono);
+}
+.footer-status::before {
+  content:'';
+  width:6px; height:6px;
+  background:var(--green);
+  border-radius:50%;
+  box-shadow:0 0 6px var(--green);
+  animation:pulse 2s infinite;
+}
+
+/* ===========================
+   REVEAL ANIMATIONS
+=========================== */
+.reveal {
+  opacity:0;
+  transform: translateY(30px);
+  transition: opacity .7s ease, transform .7s ease;
+}
+.reveal.visible {
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+@media(max-width:1100px){
+  .hero { grid-template-columns:1fr; }
+  .hero-visual { display:none; }
+  .stats-strip { grid-template-columns:repeat(2,1fr); }
+  .ranking-grid { grid-template-columns:1fr; }
+  .modules-grid { grid-template-columns:1fr 1fr; }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+}
+@media(max-width:700px){
+  .stats-strip { grid-template-columns:1fr; }
+  .modules-grid { grid-template-columns:1fr; }
+  nav .nav-links { display:none; }
+  .cta-banner { padding:40px 24px; }
+  .footer-grid { grid-template-columns:1fr; }
+  .footer-bottom { flex-direction:column; gap:12px; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+
+<!-- ========================
+     NAV
+========================= -->
+<nav>
+  <div class="nav-logo">Memed<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#game" onclick="document.getElementById('game').scrollIntoView({behavior:'smooth'});return false;">Treinamento</a></li>
+    <li><a href="#ranking" onclick="document.getElementById('ranking').scrollIntoView({behavior:'smooth'});return false;">Ranking</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('game').scrollIntoView({behavior:'smooth'})">
+    Iniciar Investigação ↗
+  </button>
+</nav>
+
+<!-- ========================
+     HERO
+========================= -->
+<div class="wrap">
+  <section class="hero">
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div>
+      <div class="hero-eyebrow">Sistema ativo · CX B2B Platform</div>
+
+      <h1>
+        CENTRAL DE<br>
+        <span class="accent">INTEGRAÇÕES</span><br>
+        <span class="outline">MEMED</span>
+      </h1>
+
+      <p class="hero-desc">
+        Investigue incidentes reais, analise evidências e desenvolva o raciocínio investigativo em integrações B2B. Treinamento oficial do time de CX.
+      </p>
+
+      <div class="hero-badges">
+        <span class="badge-sm">403 Forbidden</span>
+        <span class="badge-sm">CORS Policy</span>
+        <span class="badge-sm">401 Unauthorized</span>
+        <span class="badge-sm">Request Timeout</span>
+        <span class="badge-sm">API Auth</span>
+      </div>
+
+      <div class="hero-actions">
+        <a href="#game" class="btn-primary" onclick="document.getElementById('game').scrollIntoView({behavior:'smooth'});return false;">
+          ▶ Iniciar Investigação
+        </a>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+          <button class="btn-ghost" onclick="document.getElementById('embreveMsg').style.display='block';" style="cursor:pointer;">
+            Sobre o Treinamento →
+          </button>
+          <span id="embreveMsg" style="display:block;font-size:13px;color:var(--purple-l);font-family:var(--mono);opacity:.85;letter-spacing:.5px;">✦ em breve</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visual Panel -->
+    <div class="hero-visual">
+      <div class="hero-screen">
+        <div class="window-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <div class="window-title">memed-integrations — bash — 80×24</div>
+        </div>
+
+        <div class="terminal-lines">
+          <div><span class="t-prompt">▸</span> <span class="t-cmd">curl -X POST https://integrations.api.memed.com.br/v1/sinapse-prescricao/usuarios</span></div>
+          <br>
+          <div><span class="t-warn">→ Connecting to integrations.api.memed.com.br...</span></div>
+          <br>
+          <div><span class="t-error">✗ 403 Forbidden</span></div>
+          <div><span class="t-dim">  {"error":"insufficient_scope","message":"Token missing required permissions"}</span></div>
+          <br>
+          <div><span class="t-prompt">▸</span> <span class="t-cmd">GET /prescricoes HTTP/2</span></div>
+          <br>
+          <div><span class="t-error">Access to fetch at 'https://api.memed.com.br' from origin 'https://parceiro.com'</span></div>
+          <div><span class="t-error">has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header</span></div>
+          <br>
+          <div><span class="t-info">» Investigating incident #04...</span></div>
+          <div><span class="t-output">  status:      OPEN</span></div>
+          <div><span class="t-output">  severity:    HIGH</span></div>
+          <div><span class="t-output">  environment: production</span></div>
+          <br>
+          <div><span class="t-prompt">▸</span> <span class="t-dim">_</span><span class="cursor-blink"></span></div>
+        </div>
+
+        <div class="status-row">
+          <span class="status-pill">sinapse-api · active</span>
+          <span class="status-pill">auth-service · monitoring</span>
+          <span class="status-pill">8 incidents open</span>
+        </div>
+
+        <div class="http-grid">
+          <span class="http-chip h-get">GET 200</span>
+          <span class="http-chip h-post">POST 201</span>
+          <span class="http-chip h-patch">PATCH</span>
+          <span class="http-chip h-err">403</span>
+          <span class="http-chip h-401">401</span>
+          <span class="http-chip h-err">CORS</span>
+        </div>
+      </div>
+
+      <!-- Floating metric cards -->
+      <div class="float-card fc1">
+        <div class="fc-label">INCIDENTS OPEN</div>
+        <div class="fc-value fc-yellow">8</div>
+      </div>
+      <div class="float-card fc2">
+        <div class="fc-label">ACERTOS TOP</div>
+        <div class="fc-value fc-green">100%</div>
+      </div>
+      <div class="float-card fc3">
+        <div class="fc-label">MAX SCORE</div>
+        <div class="fc-value fc-purple">2150 pts</div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- ========================
+     STATS STRIP
+========================= -->
+<div class="wrap">
+  <div class="stats-strip reveal">
+    <div class="stat-block">
+      <div class="stat-num">8</div>
+      <div class="stat-lbl">Incidentes Reais</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">2150</div>
+      <div class="stat-lbl">Pontuação Máxima</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">4</div>
+      <div class="stat-lbl">Níveis de Expertise</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">CX</div>
+      <div class="stat-lbl">Treinamento B2B</div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================
+     GAME SECTION
+========================= -->
+<div class="wrap">
+  <section class="game-section" id="game">
+
+    <div class="section-label">Área de Treinamento</div>
+    <h2 class="section-title">Game de <span>Investigação</span></h2>
+    <p class="section-desc">
+      Analise as evidências, identifique a causa raiz e pontue. Cada incidente é baseado em situações reais do atendimento B2B.
+    </p>
+
+    <div class="game-wrapper reveal">
+      <div class="game-outer">
+        <div class="game-inner">
+
+          <!-- Chrome bar -->
+          <div class="game-chrome">
+            <div class="game-chrome-dots">
+              <div class="dot dot-r"></div>
+              <div class="dot dot-y"></div>
+              <div class="dot dot-g"></div>
+            </div>
+            <div class="game-chrome-title">
+              central-de-integracoes · memed-cx-training
+            </div>
+            <div class="game-live">LIVE SESSION</div>
+          </div>
+
+          <!-- =====================================================
+               ÁREA DO GAME — COLE O IFRAME AQUI
+               Exemplo:
+               <iframe src="URL_DO_SEU_GAME_AQUI" allowfullscreen></iframe>
+               
+               Ou se hospedar este HTML junto com o game,
+               use um <iframe src="game.html"></iframe>
+               ===================================================== -->
+          <div class="game-frame-container">
+
+            <!-- SUBSTITUA ESTE BLOCO PELO SEU IFRAME -->
+            <!-- Exemplo: <iframe src="https://seusite.com/game.html"></iframe> -->
+
+            <!-- INÍCIO DO GAME EMBUTIDO DIRETAMENTE -->
+            <div id="game-embed-area"></div>
+            <!-- FIM DO GAME EMBUTIDO -->
+
+          </div>
+          <!-- ===================================================== -->
+
+        </div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- ========================
+     RANKING
+========================= -->
+<div class="wrap">
+  <section id="ranking">
+
+    <div class="section-label">Leaderboard</div>
+    <h2 class="section-title">Top <span>Investigadores</span></h2>
+    <p class="section-desc">
+      Os melhores detetives de integração da Memed. Acerte mais incidentes, suba de nível e conquiste o topo.
+    </p>
+
+    <!-- Pódio Top 3 — preenchido dinamicamente -->
+    <div id="podium-loading" style="text-align:center;padding:40px;color:var(--muted2);font-family:var(--mono);font-size:14px;">
+      carregando ranking...
+    </div>
+
+    <div class="ranking-grid reveal" id="podium-grid" style="display:none;"></div>
+
+    <!-- Tabela de ranking — preenchida dinamicamente -->
+    <div class="rank-table reveal" id="rank-table-dynamic" style="display:none;">
+      <div class="rank-table-row header">
+        <div>#</div>
+        <div>Nome</div>
+        <div>Pontuação</div>
+        <div>Nível</div>
+      </div>
+      <div id="rank-table-body"></div>
+    </div>
+
+  </section>
+</div>
+
+<!-- ========================
+     SOBRE O TREINAMENTO
+========================= -->
+<div class="wrap">
+  <section id="sobre">
+
+    <div class="section-label">Metodologia</div>
+    <h2 class="section-title">O que você vai <span>aprender</span></h2>
+    <p class="section-desc">
+      Cada incidente cobre um tema real do dia a dia do atendimento B2B. Desenvolva intuição investigativa e resolva problemas com segurança.
+    </p>
+
+    <div class="modules-grid">
+
+      <div class="module-card reveal">
+        <div class="module-icon">🔒</div>
+        <div class="module-title">Autenticação & Autorização</div>
+        <div class="module-desc">Entenda erros 401 e 403, tokens expirados, API Keys inválidas e como orientar parceiros no processo de autenticação.</div>
+        <div class="module-tags">
+          <span class="module-tag">401</span>
+          <span class="module-tag">403</span>
+          <span class="module-tag">API Key</span>
+          <span class="module-tag">Token</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal">
+        <div class="module-icon">🌐</div>
+        <div class="module-title">CORS & Browser Security</div>
+        <div class="module-desc">Diferencie erros de CORS de falhas de API. Compreenda por que o Postman funciona mas o navegador bloqueia.</div>
+        <div class="module-tags">
+          <span class="module-tag">CORS</span>
+          <span class="module-tag">Cross-Origin</span>
+          <span class="module-tag">iframe</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal">
+        <div class="module-icon">🔌</div>
+        <div class="module-title">Integração de APIs</div>
+        <div class="module-desc">Identifique erros de ambiente, URLs erradas, endpoints incorretos e problemas na estrutura de requisições.</div>
+        <div class="module-tags">
+          <span class="module-tag">REST</span>
+          <span class="module-tag">PATCH</span>
+          <span class="module-tag">Sandbox</span>
+          <span class="module-tag">Produção</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal">
+        <div class="module-icon">⏱️</div>
+        <div class="module-title">Network & Timeout</div>
+        <div class="module-desc">Diagnostique timeouts, requests canceladas e problemas de latência. Saiba quando a falha é de rede e não de código.</div>
+        <div class="module-tags">
+          <span class="module-tag">Timeout</span>
+          <span class="module-tag">Latência</span>
+          <span class="module-tag">Network</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal">
+        <div class="module-icon">🔍</div>
+        <div class="module-title">Coleta de Evidências</div>
+        <div class="module-desc">Aprenda quais evidências solicitar: Console, Network, prints completos e contexto de ambiente para investigar corretamente.</div>
+        <div class="module-tags">
+          <span class="module-tag">Console</span>
+          <span class="module-tag">Network Tab</span>
+          <span class="module-tag">Logs</span>
+        </div>
+      </div>
+
+      <div class="module-card reveal">
+        <div class="module-icon">🧩</div>
+        <div class="module-title">Troubleshooting B2B</div>
+        <div class="module-desc">Raciocínio investigativo aplicado ao atendimento. Como estruturar o diagnóstico e escalar os casos certos com as informações certas.</div>
+        <div class="module-tags">
+          <span class="module-tag">CX</span>
+          <span class="module-tag">B2B</span>
+          <span class="module-tag">Escalação</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-banner reveal">
+      <h2>Pronto para investigar?</h2>
+      <p>8 incidentes reais. 2150 pontos em disputa. Seu nível de expertise esperando para ser revelado.</p>
+      <a href="#game" class="btn-primary" style="display:inline-flex" onclick="document.getElementById('game').scrollIntoView({behavior:'smooth'});return false;">
+        ▶ Iniciar Agora
+      </a>
+    </div>
+
+  </section>
+</div>
+
+<!-- ========================
+     FOOTER
+========================= -->
+<div class="wrap">
+  <footer>
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <div class="logo-f">Memed<span>.</span></div>
+        <p>Plataforma interna de treinamento CX - B2B. Desenvolvida para capacitar o time de integrações.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Treinamento</h4>
+        <ul>
+          <li><a href="#game">Game</a></li>
+          <li><a href="#ranking">Ranking</a></li>
+          <li><a href="#sobre">Metodologia</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Temas</h4>
+        <ul>
+          <li><a href="#">Autenticação</a></li>
+          <li><a href="#">CORS & Browser</a></li>
+          <li><a href="#">Integração API</a></li>
+          <li><a href="#">Troubleshooting</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Níveis</h4>
+        <ul>
+          <li><a href="#">Trainee</a></li>
+          <li><a href="#">Investigador</a></li>
+          <li><a href="#">Caçador de Bugs</a></li>
+          <li><a href="#">Sherlock da API</a></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Memed. Uso interno — Time CX - B2B.</div>
+      <div class="footer-status">all systems operational</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ========================
+     SCRIPTS
+========================= -->
+<script>
+/* ------- Particles ------- */
+(function(){
+  const container = document.getElementById('particles');
+  if(!container) return;
+  for(let i=0;i<30;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    p.style.left = Math.random()*100+'%';
+    p.style.animationDuration = (8+Math.random()*14)+'s';
+    p.style.animationDelay   = (Math.random()*15)+'s';
+    p.style.width = p.style.height = (Math.random()<.5?2:3)+'px';
+    p.style.opacity = (0.3+Math.random()*0.5);
+    container.appendChild(p);
+  }
+})();
+
+/* ------- Scroll reveal ------- */
+(function(){
+  const els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){
+    els.forEach(el=>el.classList.add('visible')); return;
+  }
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); }
+    });
+  },{threshold:0.12});
+  els.forEach(el=>io.observe(el));
+})();
+
+/* ------- Nav scroll effect ------- */
+(function(){
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll',()=>{
+    nav.style.background = window.scrollY>40
+      ? 'rgba(11,8,32,.95)' : 'rgba(11,8,32,.75)';
+  });
+})();
+
+/* ------- Terminal typewriter ------- */
+(function(){
+  const lines = document.querySelectorAll('.terminal-lines > div');
+  lines.forEach((l,i)=>{
+    l.style.opacity='0';
+    l.style.transition='opacity .3s';
+    setTimeout(()=>{ l.style.opacity='1'; }, i*320);
+  });
+})();
+
+/* ------- Ranking dinâmico ------- */
+(function(){
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvCEQzU1y-YP1JsaIWD4aKUw6loAq6ZY0VZlLl5TETSBzbKextwhT4CBZbG8uEYQoCJQ/exec';
+
+  const medals  = ['🥇','🥈','🥉'];
+  const classes = ['gold','silver','bronze'];
+
+  function getLevel(pts){
+    if(pts >= 1800) return 'Sherlock da API';
+    if(pts >= 1200) return 'Caçador de Bugs';
+    if(pts >= 500)  return 'Investigador';
+    return 'Trainee';
+  }
+
+  function renderPodium(ranking){
+    const grid    = document.getElementById('podium-grid');
+    const loading = document.getElementById('podium-loading');
+
+    // Top 3 posições (pode ter empates — pega posições 1, 2, 3)
+    const top3positions = [...new Set(ranking.map(r => r.posicao))].slice(0, 3);
+
+    // Ordem visual: 2º | 1º | 3º
+    const order = [
+      top3positions[1] || null,
+      top3positions[0] || null,
+      top3positions[2] || null
+    ];
+    const visualClass = ['silver','gold','bronze'];
+
+    grid.innerHTML = '';
+
+    order.forEach((pos, vi) => {
+      if(pos === null){ grid.innerHTML += `<div class="rank-card ${visualClass[vi]}"><div class="rank-medal" style="opacity:.3">${medals[vi]}</div><div class="rank-pos">aguardando</div><div class="rank-name" style="color:var(--muted2)">— —</div><div class="rank-score" style="font-size:28px;color:var(--muted2)">—</div></div>`; return; }
+
+      const jogadores = ranking.filter(r => r.posicao === pos);
+      const nomes = jogadores.map(j => j.nome).join(' · ');
+      const pts   = jogadores[0].pontuacao;
+      const acertos = jogadores[0].acertos;
+      const empate = jogadores.length > 1 ? `<div style="font-size:11px;color:var(--yellow);font-family:var(--mono);margin-top:6px;">⚖ empate · ${jogadores.length} jogadores</div>` : '';
+
+      grid.innerHTML += `
+        <div class="rank-card ${visualClass[vi]}">
+          <div class="rank-medal">${medals[vi]}</div>
+          <div class="rank-pos">#${pos} · ${getLevel(pts)}</div>
+          <div class="rank-name">${nomes}</div>
+          <div class="rank-score">${pts}</div>
+          <div class="rank-acertos">${acertos} acerto${acertos!==1?'s':''}</div>
+          ${empate}
+        </div>`;
+    });
+
+    loading.style.display = 'none';
+    grid.style.display    = 'grid';
+  }
+
+  function renderTable(ranking){
+    const table = document.getElementById('rank-table-dynamic');
+    const body  = document.getElementById('rank-table-body');
+
+    if(ranking.length === 0){
+      body.innerHTML = `<div class="rank-table-row"><div style="grid-column:1/-1;color:var(--muted2);font-size:14px;text-align:center;padding:20px 0;">Nenhum resultado ainda. Seja o primeiro!</div></div>`;
+      table.style.display = 'block';
+      return;
+    }
+
+    // Agrupa empatados na mesma linha
+    const posicoes = [...new Set(ranking.map(r => r.posicao))];
+
+    body.innerHTML = posicoes.map(pos => {
+      const grupo   = ranking.filter(r => r.posicao === pos);
+      const nomes   = grupo.map(j => j.nome).join(' · ');
+      const pts     = grupo[0].pontuacao;
+      const acertos = grupo[0].acertos;
+      const empateTag = grupo.length > 1
+        ? `<span style="font-size:11px;color:var(--yellow);font-family:var(--mono);margin-left:8px;">⚖ empate</span>`
+        : '';
+
+      return `<div class="rank-table-row">
+        <div class="rn">${pos}</div>
+        <div class="rname">${nomes}${empateTag}</div>
+        <div class="rscore">${pts}</div>
+        <div><span class="rlevel">${getLevel(pts)}</span></div>
+      </div>`;
+    }).join('');
+
+    table.style.display = 'block';
+  }
+
+  async function loadRanking(){
+    try {
+      const res  = await fetch(SCRIPT_URL);
+      const json = await res.json();
+      const ranking = json.ranking || [];
+      renderPodium(ranking);
+      renderTable(ranking);
+    } catch(err) {
+      document.getElementById('podium-loading').textContent = 'Não foi possível carregar o ranking.';
+      console.error('Erro ao carregar ranking:', err);
+    }
+  }
+
+  // Carrega ao abrir e atualiza a cada 60s
+  loadRanking();
+  setInterval(loadRanking, 60000);
+})();
+</script>
+
+<!-- ========================
+     GAME INLINE (embutido)
+     O conteúdo do game.html está
+     embutido via iframe abaixo.
+     Para usar com URL externa,
+     substitua pelo iframe com src.
+========================= -->
+
+<!-- 
+  ╔══════════════════════════════════════════════╗
+  ║  INCORPORE O GAME AQUI                       ║
+  ║                                              ║
+  ║  Opção 1 – URL externa:                      ║
+  ║  <iframe                                     ║
+  ║    src="https://seusite.com/game.html"       ║
+  ║    width="100%"                              ║
+  ║    style="min-height:900px;border:none"      ║
+  ║    allowfullscreen>                          ║
+  ║  </iframe>                                   ║
+  ║                                              ║
+  ║  Opção 2 – Google Sites:                     ║
+  ║  Use "Incorporar" e cole a URL do game       ║
+  ╚══════════════════════════════════════════════╝
+-->
+
+<script>
+/* Carrega o game via src — necessário para o fetch ao Apps Script funcionar */
+(function(){
+  const area = document.getElementById('game-embed-area');
+  if(!area) return;
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'game-iframe';
+  iframe.src = 'game.html';
+  iframe.style.cssText = 'width:100%;height:620px;border:none;display:block;transition:height .4s ease;';
+  iframe.setAttribute('allowfullscreen','');
+  area.appendChild(iframe);
+
+  window.addEventListener('message', function(e){
+    if(!e.data) return;
+    if(e.data.type === 'gameStarted'){
+      iframe.style.height = Math.max(1000, e.data.height + 60) + 'px';
+    }
+    if(e.data.type === 'gameHeight'){
+      const current = parseInt(iframe.style.height) || 620;
+      const needed  = e.data.height + 60;
+      if(needed > current){ iframe.style.height = needed + 'px'; }
+    }
+    if(e.data.type === 'gameReset'){
+      iframe.style.height = '620px';
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

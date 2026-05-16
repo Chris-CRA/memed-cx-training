@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Central de Integrações - Memed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:#0b0820;color:white;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at top left,#7c3aed40,transparent 30%),radial-gradient(circle at bottom right,#8b5cf640,transparent 30%),#0b0820;z-index:-2;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);background-size:40px 40px;z-index:-1;}
+.container{width:min(1400px,92%);margin:auto;padding:40px 0;}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:60px;min-height:560px;padding:40px 0;}
+.logo{font-size:42px;font-weight:800;margin-bottom:30px;}
+.logo span{color:#9f6cff;}
+.hero h1{font-size:82px;line-height:0.95;margin-bottom:20px;}
+.hero h1 span{color:#9f6cff;}
+.subtitle{display:inline-block;background:#2d1c55;color:#d9c8ff;padding:12px 20px;border-radius:14px;margin-bottom:25px;font-size:20px;}
+.description{color:#cfcfcf;font-size:20px;line-height:1.7;max-width:620px;margin-bottom:40px;}
+.player-form{display:flex;flex-direction:column;gap:16px;margin-bottom:28px;max-width:420px;}
+.player-form input{background:#161026;border:1px solid #322554;color:white;padding:18px 20px;border-radius:16px;font-size:16px;outline:none;transition:.3s;}
+.player-form input:focus{border-color:#9f6cff;box-shadow:0 0 0 4px #8b5cf633;}
+.player-form input::placeholder{color:#8f8aa8;}
+.hero-buttons{display:flex;gap:16px;flex-wrap:wrap;}
+button{border:none;font-family:'Outfit',sans-serif;cursor:pointer;}
+.primary-btn{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;padding:20px 34px;border-radius:18px;font-size:18px;font-weight:700;transition:.3s;box-shadow:0 10px 30px rgba(124,58,237,.35);}
+.primary-btn:hover{transform:translateY(-4px);}
+.secondary-btn{background:#1a1333;border:1px solid #35245c;color:#ddd;padding:20px 28px;border-radius:18px;font-size:17px;}
+.hero-card{background:linear-gradient(180deg,#171129,#120d22);border:1px solid #2e2350;border-radius:32px;padding:30px;position:relative;overflow:hidden;min-height:520px;}
+.hero-card::before{content:'';position:absolute;width:300px;height:300px;background:#8b5cf620;border-radius:50%;top:-100px;right:-100px;}
+.robot{font-size:140px;text-align:center;margin-top:40px;}
+.fake-console{background:#0d1117;border:1px solid #30363d;border-radius:18px;padding:18px;margin-top:30px;font-family:monospace;font-size:14px;color:#7ee787;}
+.fake-console .error{color:#ff7b72;}
+.dashboard{display:none;animation:fade .5s ease;}
+.top-dashboard{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:30px;}
+.stat-card{background:#161026;border:1px solid #2c2147;border-radius:24px;padding:24px;}
+.stat-title{color:#b7a9d9;margin-bottom:10px;}
+.stat-value{font-size:36px;font-weight:700;}
+.progress-area{margin-bottom:35px;}
+.progress-bar{width:100%;height:18px;background:#1b1333;border-radius:999px;overflow:hidden;border:1px solid #322554;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#8b5cf6,#a855f7);transition:.5s;}
+.game-layout{display:grid;grid-template-columns:320px 1fr;gap:24px;}
+.sidebar{background:#161026;border:1px solid #2b2147;border-radius:28px;padding:24px;height:fit-content;position:sticky;top:20px;}
+.sidebar h3{margin-bottom:25px;}
+.incident-list{display:flex;flex-direction:column;gap:14px;}
+.incident-item{background:#1d1636;border:1px solid #312455;padding:18px;border-radius:18px;transition:.3s;}
+.incident-item.active{border-color:#9f6cff;background:#271b48;}
+.incident-item.done{opacity:.6;}
+.incident-item h4{font-size:15px;margin-bottom:10px;}
+.points{color:#b7a9d9;font-size:14px;}
+.main-card{background:linear-gradient(180deg,#171129,#120d22);border:1px solid #2d2250;border-radius:32px;padding:35px;animation:fade .4s ease;}
+.top-card{display:flex;justify-content:space-between;margin-bottom:25px;}
+.badge{background:#6d28d9;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;}
+.severity{background:#f59e0b;color:black;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:700;}
+.main-card h2{font-size:38px;margin-bottom:25px;}
+.block{background:#0d1117;border:1px solid #30363d;border-radius:20px;padding:24px;margin-bottom:24px;}
+.block-title{margin-bottom:18px;color:#cdb8ff;}
+pre{overflow:auto;white-space:pre-wrap;color:#ff7b72;line-height:1.7;font-size:14px;}
+.question{font-size:28px;font-weight:700;margin-bottom:25px;}
+.answers{display:grid;gap:16px;}
+.answer-btn{background:#20163b;border:1px solid #35255f;border-radius:18px;padding:22px;color:white;font-size:17px;text-align:left;transition:.25s;}
+.answer-btn:hover{border-color:#9f6cff;transform:translateY(-2px);}
+.correct{background:#14532d!important;border-color:#22c55e!important;}
+.wrong{background:#7f1d1d!important;border-color:#ef4444!important;}
+.feedback{margin-top:28px;padding:24px;border-radius:22px;background:#171f2d;border:1px solid #283548;display:none;}
+.feedback.show{display:block;animation:fade .3s ease;}
+.feedback h3{margin-bottom:12px;}
+.next-btn{margin-top:24px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:white;padding:18px 28px;border-radius:16px;font-size:16px;font-weight:700;}
+.final-screen{display:none;text-align:center;padding:80px 20px;}
+.final-screen h1{font-size:64px;margin-bottom:20px;}
+.final-score{font-size:80px;color:#9f6cff;font-weight:800;margin-bottom:30px;}
+.trophy{font-size:120px;margin-bottom:20px;}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1100px){.hero{grid-template-columns:1fr}.game-layout{grid-template-columns:1fr}.top-dashboard{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:56px}}
+@media(max-width:700px){.top-dashboard{grid-template-columns:1fr}.hero h1{font-size:42px}.main-card h2{font-size:28px}.question{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<section class="hero" id="hero">
+  <div>
+    <div class="logo">Memed<span>.</span></div>
+    <h1>CENTRAL DE<br><span>INTEGRAÇÕES</span></h1>
+    <div class="subtitle">O desafio de CX no atendimento B2B</div>
+    <p class="description">Analise incidentes reais, investigue evidências,<br>descubra a causa provável e desenvolva seu<br>raciocínio em integrações.</p>
+    <div class="player-form">
+      <input type="text" id="playerName" placeholder="Digite seu nome"/>
+      <input type="email" id="playerEmail" placeholder="Digite seu e-mail"/>
+    </div>
+    <div class="hero-buttons">
+      <button class="primary-btn" onclick="startGame()">▶ Iniciar Missão</button>
+      <button class="secondary-btn">8 incidentes • Ranking • Pontuação</button>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="robot">🤖</div>
+    <div class="fake-console">
+      <div>POST /prescricoes</div><br>
+      <div class="error">Blocked a frame with origin...</div><br>
+      <div>403 Forbidden</div><br>
+      <div>status: investigating...</div>
+    </div>
+  </div>
+</section>
+
+<section class="dashboard" id="dashboard">
+  <div class="top-dashboard">
+    <div class="stat-card"><div class="stat-title">Pontuação</div><div class="stat-value" id="score">0</div></div>
+    <div class="stat-card"><div class="stat-title">Incidente</div><div class="stat-value"><span id="currentIncident">1</span>/8</div></div>
+    <div class="stat-card"><div class="stat-title">Nível</div><div class="stat-value" id="level">Trainee</div></div>
+    <div class="stat-card"><div class="stat-title">Acertos</div><div class="stat-value" id="hits">0</div></div>
+  </div>
+  <div class="progress-area"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
+  <div class="game-layout">
+    <div class="sidebar"><h3>🚨 Incidentes</h3><div class="incident-list" id="incidentList"></div></div>
+    <div class="main-card" id="mainCard"></div>
+  </div>
+</section>
+
+<section class="final-screen" id="finalScreen">
+  <div class="trophy">🏆</div>
+  <h1>Missão Finalizada</h1>
+  <div class="final-score" id="finalScore">0</div>
+  <p style="font-size:22px;color:#cfcfcf;margin-bottom:40px;">Excelente investigação técnica!</p>
+  <button class="primary-btn" onclick="restartGame()">Jogar novamente</button>
+</section>
+
+</div>
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzvCEQzU1y-YP1JsaIWD4aKUw6loAq6ZY0VZlLl5TETSBzbKextwhT4CBZbG8uEYQoCJQ/exec';
+
+const incidents = [
+  {
+    title:"Tela não carrega no iframe",
+    severity:"MÉDIA",
+    category:"Browser Security",
+    points:300,
+    evidence:"\nUncaught SecurityError:\nFailed to read a named property 'href'\nfrom 'Location':\nBlocked a frame with origin...\n",
+    question:"Qual a hipótese mais provável?",
+    answers:["API da Memed fora do ar","Bloqueio CORS / Cross-Origin","Banco indisponível","Erro visual de CSS"],
+    correct:1,
+    explanation:"\nO navegador está bloqueando o carregamento\npor política de segurança entre domínios\n(CORS / Cross-Origin).\n"
+  },
+  {
+    title:"403 Forbidden na API",
+    severity:"ALTA",
+    category:"Autenticação",
+    points:300,
+    evidence:"\nGET /prescricoes\n\n403 Forbidden\n",
+    question:"O que o 403 normalmente indica?",
+    answers:["Banco fora do ar","Erro visual","Problema de autenticação/permissão","Erro de CSS"],
+    correct:2,
+    explanation:"\n403 geralmente indica bloqueio de acesso,\ntoken inválido ou falta de permissão.\n"
+  },
+  {
+    title:"Postman funciona, navegador falha",
+    severity:"MÉDIA",
+    category:"CORS",
+    points:250,
+    evidence:"\nAccess to fetch at API\nhas been blocked by CORS policy.\n",
+    question:"Qual a principal hipótese?",
+    answers:["Banco indisponível","Erro de navegador/CORS","API caiu","Erro no CSS"],
+    correct:1,
+    explanation:"\nO browser possui regras de segurança que\nnão existem no Postman.\n"
+  },
+  {
+    title:"Erro ao atualizar cadastro do médico",
+    severity:"ALTA",
+    category:"Integração API",
+    points:400,
+    evidence:"\nParceiro informou erro ao atualizar\no cadastro do médico em produção.\n\ncurl --request PATCH \\\n--url 'https://integrations.api.memed.com.br/v1/sinapse-prescricao/usuarios/EXTERNAL_ID?api-key=***&secret-key=***' \\\n--header 'Accept: application/vnd.api+json'\n",
+    question:"Qual erro o parceiro está cometendo?",
+    answers:["Erro visual no portal da Memed","Problema na rota/url do ambiente incorreto","Banco de dados da Memed indisponível","Dados do médico incorretos"],
+    correct:1,
+    explanation:"\nParceiro está usando a URL de homologação (sandbox / testes) mas informou estar trabalhando em produção.\n"
+  },
+  {
+    title:"Token expirado",
+    severity:"ALTA",
+    category:"Autenticação",
+    points:300,
+    evidence:"\n401 Unauthorized\nInvalid token\n",
+    question:"Como auxiliar o parceiro com esse erro?",
+    answers:["Pedir curl completo para analisar","Solicitar teste pela aba anônima do navegador","Confirmar se as chaves/token estão corretos e ativos e enviar documentação de autenticação","Recomendar limpar cache do navegador"],
+    correct:2,
+    explanation:"\nO token provavelmente expirou ou perdeu validade e o parceiro precisa confirmar pelo teste na documentação para solicitar em CX o reenvio das chaves.\n"
+  },
+  {
+    title:"Request timeout",
+    severity:"MÉDIA",
+    category:"Network",
+    points:250,
+    evidence:"\nRequest pending...\nCanceled\nTimeout exceeded\n",
+    question:"Qual a hipótese mais provável?",
+    answers:["Latência/timeout","Erro de imagem","CSS","Cross-origin"],
+    correct:0,
+    explanation:"\nA request foi interrompida por timeout\nou cancelamento da conexão.\n"
+  },
+  {
+    title:"Evidência insuficiente",
+    severity:"INVESTIGAÇÃO",
+    category:"CX",
+    points:350,
+    evidence:"\n\"Não está funcionando.\"\n(print cortado)\n",
+    question:"O que NÃO pode faltar?",
+    answers:["Console e Network","Emoji do parceiro","Wallpaper do notebook","Nome da impressora"],
+    correct:0,
+    explanation:"\nSem evidências corretas, não existe investigação.\n"
+  }
+];
+
+let current = 0, score = 0, hits = 0;
+let respostasUsuario = [];
+let playerData = { nome:'', email:'' };
+
+function startGame() {
+  const nome  = document.getElementById('playerName').value.trim();
+  const email = document.getElementById('playerEmail').value.trim();
+  if (!nome || !email) { alert('Preencha nome e e-mail para iniciar.'); return; }
+  playerData.nome  = nome;
+  playerData.email = email;
+  document.getElementById('hero').style.display      = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  renderSidebar();
+  renderIncident();
+  setTimeout(function(){ reportHeight('gameStarted'); }, 100);
+}
+
+function renderSidebar() {
+  const list = document.getElementById('incidentList');
+  list.innerHTML = '';
+  incidents.forEach((incident, index) => {
+    const item = document.createElement('div');
+    item.className = 'incident-item';
+    if (index === current) item.classList.add('active');
+    if (index < current)  item.classList.add('done');
+    item.innerHTML = `<h4>${incident.title}</h4><div class="points">${incident.points} pts</div>`;
+    list.appendChild(item);
+  });
+}
+
+function renderIncident() {
+  const incident = incidents[current];
+  document.getElementById('currentIncident').innerText = current + 1;
+  const progress = (current / incidents.length) * 100;
+  document.getElementById('progressFill').style.width = `${progress}%`;
+  const card = document.getElementById('mainCard');
+  card.innerHTML = `
+    <div class="top-card">
+      <div class="badge">INCIDENTE #0${current + 1}</div>
+      <div class="severity">${incident.severity}</div>
+    </div>
+    <h2>${incident.title}</h2>
+    <div class="block">
+      <div class="block-title">Evidências</div>
+      <pre>${incident.evidence}</pre>
+    </div>
+    <div class="question">${incident.question}</div>
+    <div class="answers">
+      ${incident.answers.map((answer, index) =>
+        `<button class="answer-btn" onclick="selectAnswer(${index})">${answer}</button>`
+      ).join('')}
+    </div>
+    <div class="feedback" id="feedback"></div>`;
+}
+
+function selectAnswer(index) {
+  respostasUsuario.push({ incidente: current + 1, resposta: index });
+  const incident = incidents[current];
+  const buttons  = document.querySelectorAll('.answer-btn');
+  buttons.forEach(btn => { btn.disabled = true; });
+  const feedback = document.getElementById('feedback');
+  if (index === incident.correct) {
+    buttons[index].classList.add('correct');
+    score += incident.points;
+    hits++;
+    updateLevel();
+    feedback.innerHTML = `
+      <h3>✅ Excelente investigação!</h3>
+      <p>+${incident.points} pontos</p><br>
+      <p>${incident.explanation}</p>
+      <button class="next-btn" onclick="nextIncident()">Próximo incidente →</button>`;
+  } else {
+    buttons[index].classList.add('wrong');
+    buttons[incident.correct].classList.add('correct');
+    feedback.innerHTML = `
+      <h3>❌ Hipótese incorreta</h3>
+      <p>${incident.explanation}</p>
+      <button class="next-btn" onclick="nextIncident()">Continuar →</button>`;
+  }
+  feedback.classList.add('show');
+  updateDashboard();
+}
+
+function nextIncident() {
+  current++;
+  if (current >= incidents.length) { finishGame(); return; }
+  renderSidebar();
+  renderIncident();
+}
+
+function updateLevel() {
+  let level = 'Trainee';
+  if (score >= 500)  level = 'Investigador';
+  if (score >= 1200) level = 'Caçador de Bugs';
+  if (score >= 1800) level = 'Sherlock da API';
+  document.getElementById('level').innerText = level;
+}
+
+function updateDashboard() {
+  document.getElementById('score').innerText = score;
+  document.getElementById('hits').innerText  = hits;
+}
+
+async function saveResults() {
+  const payload = {
+    nome:      playerData.nome,
+    email:     playerData.email,
+    pontuacao: score,
+    acertos:   hits,
+    respostas: respostasUsuario
+  };
+  console.log('Enviando resultado:', payload);
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+    const result = await response.json();
+    console.log('Resposta Apps Script:', result);
+  } catch (error) {
+    console.error('Erro ao salvar ranking:', error);
+  }
+}
+
+async function finishGame() {
+  await saveResults();
+  document.getElementById('dashboard').style.display   = 'none';
+  document.getElementById('finalScreen').style.display = 'block';
+  document.getElementById('finalScore').innerText = score;
+}
+
+function restartGame() {
+  current = 0; score = 0; hits = 0;
+  respostasUsuario = [];
+  playerData = { nome:'', email:'' };
+  document.getElementById('playerName').value  = '';
+  document.getElementById('playerEmail').value = '';
+  document.getElementById('finalScreen').style.display = 'none';
+  document.getElementById('hero').style.display        = 'grid';
+  updateDashboard();
+  parent.postMessage({ type:'gameReset' }, '*');
+}
+
+// Auto-height reporter para o site pai
+function reportHeight(type) {
+  var h = document.body.scrollHeight;
+  parent.postMessage({ type: type || 'gameHeight', height: h }, '*');
+}
+var lastH = 0;
+setInterval(function(){
+  var h = document.body.scrollHeight;
+  if (h !== lastH) { lastH = h; reportHeight('gameHeight'); }
+}, 200);
+</script>
+</body>
+</html>
