@@ -93,7 +93,7 @@ pre{overflow:auto;white-space:pre-wrap;color:#ff7b72;line-height:1.7;font-size:1
     </div>
     <div class="hero-buttons">
       <button class="primary-btn" onclick="startGame()">▶ Iniciar Missão</button>
-      <button class="secondary-btn">8 incidentes • Ranking • Pontuação</button>
+      <button class="secondary-btn">7 incidentes • Ranking • Pontuação</button>
     </div>
   </div>
   <div class="hero-card">
@@ -110,7 +110,7 @@ pre{overflow:auto;white-space:pre-wrap;color:#ff7b72;line-height:1.7;font-size:1
 <section class="dashboard" id="dashboard">
   <div class="top-dashboard">
     <div class="stat-card"><div class="stat-title">Pontuação</div><div class="stat-value" id="score">0</div></div>
-    <div class="stat-card"><div class="stat-title">Incidente</div><div class="stat-value"><span id="currentIncident">1</span>/8</div></div>
+    <div class="stat-card"><div class="stat-title">Incidente</div><div class="stat-value"><span id="currentIncident">1</span>/7</div></div>
     <div class="stat-card"><div class="stat-title">Nível</div><div class="stat-value" id="level">Trainee</div></div>
     <div class="stat-card"><div class="stat-title">Acertos</div><div class="stat-value" id="hits">0</div></div>
   </div>
@@ -325,8 +325,6 @@ async function saveResults() {
     respostas: respostasUsuario
   };
   console.log('Enviando resultado:', payload);
-
-  // Tentativa 1: fetch com no-cors (não lê resposta mas passa pelo CORS)
   try {
     await fetch(APPS_SCRIPT_URL, {
       method:  'POST',
@@ -334,17 +332,7 @@ async function saveResults() {
       headers: { 'Content-Type': 'text/plain' },
       body:    JSON.stringify(payload)
     });
-    console.log('Resultado enviado via no-cors');
-    return;
-  } catch (error) {
-    console.warn('no-cors falhou, tentando via GET:', error);
-  }
-
-  // Tentativa 2: fallback via GET com dados na URL (contorna CORS completamente)
-  try {
-    const params = encodeURIComponent(JSON.stringify(payload));
-    await fetch(APPS_SCRIPT_URL + '?save=' + params, { mode: 'no-cors' });
-    console.log('Resultado enviado via GET fallback');
+    console.log('Resultado enviado com sucesso');
   } catch (error) {
     console.error('Erro ao salvar ranking:', error);
   }
