@@ -987,7 +987,7 @@ footer {
   <section class="game-section" id="game">
 
     <div class="section-label">Área de Treinamento</div>
-    <h2 class="section-title">Game de <span>Investigação</span></h2>
+    <h2 class="section-title">Mini Game de <span>Investigação</span></h2>
     <p class="section-desc">
       Analise as evidências, identifique a causa raiz e pontue. Cada incidente é baseado em situações reais do atendimento B2B.
     </p>
@@ -1289,28 +1289,35 @@ footer {
     // Top 3 posições (pode ter empates — pega posições 1, 2, 3)
     const top3positions = [...new Set(ranking.map(r => r.posicao))].slice(0, 3);
 
-    // Ordem visual: 2º | 1º | 3º
-    const order = [
-      top3positions[1] || null,
-      top3positions[0] || null,
-      top3positions[2] || null
-    ];
-    const visualClass = ['silver','gold','bronze'];
+    // Ordem visual: 2º | 1º | 3º  (posições reais: índice 1, 0, 2)
+    // visualOrder[i] = índice em top3positions ; realMedalIndex[i] = medalha correta
+    const visualOrder     = [1, 0, 2];
+    const visualClass     = ['silver', 'gold', 'bronze'];
+    const realMedalIndex  = [1, 0, 2]; // 🥈 no slot 0, 🥇 no slot 1, 🥉 no slot 2
 
     grid.innerHTML = '';
 
-    order.forEach((pos, vi) => {
-      if(pos === null){ grid.innerHTML += `<div class="rank-card ${visualClass[vi]}"><div class="rank-medal" style="opacity:.3">${medals[vi]}</div><div class="rank-pos">aguardando</div><div class="rank-name" style="color:var(--muted2)">— —</div><div class="rank-score" style="font-size:28px;color:var(--muted2)">—</div></div>`; return; }
+    visualOrder.forEach((posIdx, vi) => {
+      const pos = top3positions[posIdx] || null;
+      const medal = medals[realMedalIndex[vi]];
+      const cls   = visualClass[vi];
+
+      if(pos === null){
+        grid.innerHTML += `<div class="rank-card ${cls}"><div class="rank-medal" style="opacity:.3">${medal}</div><div class="rank-pos">aguardando</div><div class="rank-name" style="color:var(--muted2)">— —</div><div class="rank-score" style="font-size:28px;color:var(--muted2)">—</div></div>`;
+        return;
+      }
 
       const jogadores = ranking.filter(r => r.posicao === pos);
-      const nomes = jogadores.map(j => j.nome).join(' · ');
-      const pts   = jogadores[0].pontuacao;
+      const nomes   = jogadores.map(j => j.nome).join(' · ');
+      const pts     = jogadores[0].pontuacao;
       const acertos = jogadores[0].acertos;
-      const empate = jogadores.length > 1 ? `<div style="font-size:11px;color:var(--yellow);font-family:var(--mono);margin-top:6px;">⚖ empate · ${jogadores.length} jogadores</div>` : '';
+      const empate  = jogadores.length > 1
+        ? `<div style="font-size:11px;color:var(--yellow);font-family:var(--mono);margin-top:6px;">⚖ empate · ${jogadores.length} jogadores</div>`
+        : '';
 
       grid.innerHTML += `
-        <div class="rank-card ${visualClass[vi]}">
-          <div class="rank-medal">${medals[vi]}</div>
+        <div class="rank-card ${cls}">
+          <div class="rank-medal">${medal}</div>
           <div class="rank-pos">#${pos} · ${getLevel(pts)}</div>
           <div class="rank-name">${nomes}</div>
           <div class="rank-score">${pts}</div>
